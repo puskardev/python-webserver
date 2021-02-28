@@ -19,36 +19,34 @@ while True:
     # Get the client request
     request = client_connection.recv(1024).decode()
     print (request)
-    
-    #parse the HTTP request
-    split_request = request.split("\n")
 
-    #get the request line from the request message
-    request_line = split_request[0]   
+    # Parse HTTP headers
+    request_message = request.split('\n')
 
-    #get fielname from request line
-    temp = request_line.split(" ")
+    #extract file name
+    request_line = request_message[0].split(' ')
 
-    for i in range(len(temp)):
+    for i in range(len(request_line)):
         if (i == 1):
-            filename = temp[i]
+            filename = request_line[i]
 
-    filename = filename[1:]
-    print(filename)
+   
+    try:
+        fin = open('htdocs' + filename)
+        content = fin.read()
+        fin.close()
 
-    f = open('htdocs/' + filename)
-    content = f.read()
-    f.close()
+        response = 'HTTP/1.0 200 OK\n\n' + content
+    
+    except FileNotFoundError:
 
-    print(content)
-      
+        response = 'HTTP/1.0 404 NOT FOUND\n\nFile Not Found'
 
     # Send HTTP response
-    response = 'HTTP/1.0 200 OK\n\n' + content
     client_connection.sendall(response.encode())
-
     client_connection.close()
-
+    
+  
 # Close socket
 server_socket.close()
 
